@@ -1,0 +1,21 @@
+<drugbank>
+    <drug>
+        <clearance>* 164 ml/min [Healthy 18-60 yrs]&#13;
+            * 139 ml/min [Healthy 65-80 yrs]&#13;
+            * 61 ml/min [renal impaired]&#13;
+            * 114 ml/min [HIT (Heparin-induced thrombocytopenia)]
+        </clearance>
+        <classification>
+            <description/>
+            <direct-parent>Peptides</direct-parent>
+            <kingdom>Organic Compounds</kingdom>
+            <superclass>Organic Acids</superclass>
+            <class>Carboxylic Acids and Derivatives</class>
+            <subclass>Amino Acids, Peptides, and Analogues</subclass>
+        </classification>
+        <synonyms>
+            <synonym language="qwe" coder="">Hirudin variant-1</synonym>
+            <synonym language="123" coder="">Lepirudin recombinant</synonym>
+        </synonyms>
+    </drug>
+</drugbank>
