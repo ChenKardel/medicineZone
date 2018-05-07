@@ -24,6 +24,7 @@ class ListField(models.TextField):
             return value
         return str(value)
 
+
 #
 class Drug(models.Model):
     drugbankId = models.TextField()  # type:list
@@ -44,7 +45,7 @@ class Drug(models.Model):
     pharmacodynamics = models.TextField()
     mechanismOfAction = models.TextField()
     toxicity = models.TextField()
-    selfmetabolism = models.TextField()
+    metabolism = models.TextField()
     absorption = models.TextField()
     halfLife = models.TextField()
     proteinBinding = models.TextField()  # type: str
@@ -60,7 +61,7 @@ class Drug(models.Model):
     # self.manufacturers  # type: list[Manufacturer]
     # self.prices  # type: list[Price]
     # self.categories  # type: list[Category]
-    # self.affectedOrganisms  # type: list[AffectedOrganism]
+    affectedOrganisms = ListField()  # type: list[AffectedOrganism]
     # self.dosages  # type: list[Dosage]
     # self.atcCodes  # type: AtcCode
     ahfsCodes = models.TextField()
@@ -93,9 +94,14 @@ class Drug(models.Model):
 #     definingChange = models.TextField()
 #     description = models.TextField()
 #     pubmedId = models.TextField()
+class Dosage(models.Model):
+    drug = models.ForeignKey(Drug, on_delete=models.DO_NOTHING, related_name="drug_dosages")
+    form = models.TextField()
+    route = models.TextField()
+    strength = models.TextField()
 
 
-class SnpAdverseDrugReactions(models.Model):
+class SnpAdverseDrugReaction(models.Model):
     drug = models.ForeignKey(Drug, on_delete=models.DO_NOTHING, related_name="drug_snpAdverseDrugReactions")
     proteinName = models.TextField()
     geneSymbol = models.TextField()
@@ -126,6 +132,7 @@ class Salt(models.Model):
     unii = models.TextField()
     casNumber = models.TextField()
     inchikey = models.TextField()
+
 
 # ignore
 class Polypeptide(models.Model):
@@ -167,7 +174,13 @@ class Pfam(models.Model):
 
 class ExternalIdentifier(models.Model):
     drug = models.ForeignKey(Drug, on_delete=models.DO_NOTHING, related_name="drug_externalIdentifiers")
+    resource = models.TextField()
+    identifier = models.TextField()
 
+
+class PolypeptideExternalIdentifier(models.Model):
+    polypeptide = models.ForeignKey(Polypeptide, on_delete=models.DO_NOTHING,
+                                    related_name="polypeptide_externalIdentifiers")
     resource = models.TextField()
     identifier = models.TextField()
 
@@ -177,6 +190,13 @@ class Pathway(models.Model):
     smpdbId = models.TextField()
     name = models.TextField()
     category = models.TextField()
+    enzymes = ListField()
+
+
+class PathwayDrug(models.Model):
+    pathway = models.ForeignKey(Pathway, on_delete=models.DO_NOTHING, related_name="pathway_Drugs")
+    drugbankId = models.TextField()
+    name = models.TextField()
 
 
 class ExternalLink(models.Model):
@@ -227,10 +247,10 @@ class Level(models.Model):
 #     route = models.TextField()
 #     strength = models.TextField()
 
-
-class AffectedOrganism(models.Model):
-    drug = models.ForeignKey(Drug, on_delete=models.DO_NOTHING, related_name="drug_affectedOrganisms")
-    content = models.TextField()  # ???看不懂
+#
+# class AffectedOrganism(models.Model):
+#     drug = models.ForeignKey(Drug, on_delete=models.DO_NOTHING, related_name="drug_affectedOrganisms")
+#     content = models.TextField()  # ???看不懂
 
 
 class Category(models.Model):
@@ -294,7 +314,7 @@ class Product(models.Model):
 
 class Synonym(models.Model):
     drug = models.ForeignKey(Drug, on_delete=models.DO_NOTHING, related_name="drug_synonym")
-
+    content = models.TextField()
     language = models.TextField()
     coder = models.TextField()
 
@@ -310,22 +330,23 @@ class Protein(models.Model):
     polypeptide = models.OneToOneField(Polypeptide, on_delete=models.DO_NOTHING)
 
 
-class Article(models.Model):
-    pumbedId = models.TextField()  # type: str
-    citation = models.TextField()  # type: str
-    protein = models.ForeignKey(Protein, on_delete=models.DO_NOTHING, related_name="protein_article")
-    drug = models.ForeignKey(Drug, on_delete=models.DO_NOTHING, related_name="drug_article")
-
-
-class Textbook(models.Model):
-    links = models.TextField()
-    protein = models.ForeignKey(Protein, on_delete=models.DO_NOTHING, related_name="protein_textbook")
-    drug = models.ForeignKey(Drug, on_delete=models.DO_NOTHING, related_name="drug_textbook")
-
-
-class Link(models.Model):
-    title = models.TextField()
-    url = models.TextField()
+# ignore
+# class Article(models.Model):
+#     pumbedId = models.TextField()  # type: str
+#     citation = models.TextField()  # type: str
+#     protein = models.ForeignKey(Protein, on_delete=models.DO_NOTHING, related_name="protein_article")
+#     drug = models.ForeignKey(Drug, on_delete=models.DO_NOTHING, related_name="drug_article")
+#
+#
+# class Textbook(models.Model):
+#     links = models.TextField()
+#     protein = models.ForeignKey(Protein, on_delete=models.DO_NOTHING, related_name="protein_textbook")
+#     drug = models.ForeignKey(Drug, on_delete=models.DO_NOTHING, related_name="drug_textbook")
+#
+#
+# class Link(models.Model):
+#     title = models.TextField()
+#     url = models.TextField()
 
 
 class Classification(models.Model):
@@ -348,7 +369,8 @@ class Carrier(models.Model):
     knownAction = models.TextField()
     polypeptide = models.OneToOneField(Polypeptide, on_delete=models.DO_NOTHING)
 
-class InternationalBrands(models.Model):
+
+class InternationalBrand(models.Model):
     drug = models.ForeignKey(Drug, on_delete=models.DO_NOTHING, related_name="drug_internationalBrands")
     name = models.TextField()
     company = models.TextField()
@@ -374,11 +396,26 @@ class Target(models.Model):
     polypeptide = models.OneToOneField(Polypeptide, on_delete=models.DO_NOTHING)
 
 
+class Enzyme(models.Model):
+    drug = models.ManyToManyField(Drug, related_name="drug_enzymes")
+    id = models.TextField(primary_key=True)
+    name = models.TextField()
+    organism = models.TextField()
+    action = ListField()
+    knownAction = models.TextField()
+    polypeptide = models.OneToOneField(Polypeptide, on_delete=models.DO_NOTHING)
+
+
 class Reaction(models.Model):
     drug = models.ForeignKey(Drug, on_delete=models.DO_NOTHING, related_name="drugs_reactions")
     seqence = models.IntegerField()
-    # leftElement = models.OneToOneField(Element, on_delete=models.DO_NOTHING)
-    # rightElement = models.OneToOneField(Element, on_delete=models.DO_NOTHING)
+
+
+class ReactionEnzyme(models.Model):
+    reaction = models.ForeignKey(Reaction, on_delete=models.DO_NOTHING, related_name="reaction_enzymes")
+    drugbankId = models.TextField()
+    name = models.TextField()
+    uniprotId = models.TextField()
 
 
 class Element(models.Model):
